@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import pool from "../db.js";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket,ResultSetHeader } from "mysql2";
 
 interface Category extends RowDataPacket {
   id: number;
@@ -70,12 +70,14 @@ export const createCategory = async (req: Request, res: Response) => {
       })
     }
 
-    const [result] = await pool.query("INSERT INTO categories (name) VALUES (?)",
+    const [result] = await pool.query<ResultSetHeader>
+    ("INSERT INTO categories (name) VALUES (?)",
       [name.trim()]
     )
 
     return res.status(201).json({
       message: "Category created successfully",
+      id: result.insertId,
       name: name.trim(),
     });
 
