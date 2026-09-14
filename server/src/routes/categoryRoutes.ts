@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { validateCategory } from "../middleware/validateCategory.js";
 import {
   getCategories,
   getCategory,
@@ -9,6 +10,6 @@ const router = Router();
 
 router.get("/", getCategories);
 router.get("/:id", getCategory);
-router.post("/", createCategory);
+router.post("/", validateCategory, createCategory);
 
 export default router;

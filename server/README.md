@@ -1,5 +1,30 @@
 # Backend u Dockeru
 
+## Organizacija koda
+
+Tok zahteva: ruta -> middleware validacija -> kontroler -> servis -> MySQL.
+
+- `src/routes`: povezuje HTTP adrese sa kontrolerima.
+- `src/middleware`: proverava telo zahteva za proizvode i kategorije; vraca 400
+  za neispravne podatke ili poziva next() da nastavi obradu.
+- `src/controllers`: cita zahtev, proverava :id parametar i salje HTTP odgovor.
+- `src/services`: izvrsava operacije i SQL upite; prima obicne vrednosti,
+  vraca podatke i ne koristi Express req/res objekte.
+- `src/db.ts`: zajednicki pool konekcija.
+
+Product servis proverava postojanje kategorije i uklanja razmake oko naziva.
+Za nepostojecu kategoriju baca CategoryNotFoundError, koji kontroler prevodi
+u HTTP 400. Dohvatanje nepostojeceg zapisa vraca null, a kontroler salje 404.
+Repozitorijumi nisu uvedeni; SQL je za sada u servisima.
+
+Provera dok Docker servisi rade, iz server foldera:
+
+```bash
+docker compose exec -T api npx tsc --noEmit
+```
+
+## Pokretanje
+
 Potreban je Docker sa Docker Compose-om. Ako koristis WSL, ukljuci integraciju
 za svoju distribuciju u Docker Desktop > Settings > Resources > WSL Integration.
 
