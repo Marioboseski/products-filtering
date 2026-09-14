@@ -1,30 +1,21 @@
 import type { Request, Response } from "express";
-import pool from "../db.js";
-import type { RowDataPacket,ResultSetHeader } from "mysql2";
-
-interface Category extends RowDataPacket {
-  id: number;
-  name: string;
-}
+import * as categoryService from "../services/categoryService.js";
 
 export const getCategories = async (req: Request, res: Response) => {
   try {
+    const categories = await categoryService.getCategories();
 
-    const [rows] = await pool.query("SELECT * FROM categories");
-
-    res.status(200).json(rows);
-
+    return res.status(200).json(categories);
   } catch (error) {
-    console.log("Error fetching categories", error);
-    res.status(500).json({
+    console.error("Error fetching categories", error);
+    return res.status(500).json({
       message: "Failed to fetch categories"
     });
   }
-}
+};
 
 export const getCategory = async (req: Request, res: Response) => {
   try {
-
     const categoryId = Number(req.params.id);
 
     if (!Number.isInteger(categoryId) || categoryId <= 0) {
@@ -33,56 +24,36 @@ export const getCategory = async (req: Request, res: Response) => {
       });
     }
 
-    const [rows] = await pool.query<Category[]>("SELECT * FROM categories WHERE id = ?",
-      [categoryId]);
+    const category = await categoryService.getCategoryById(categoryId);
 
-    if (rows.length === 0) {
+    if (!category) {
       return res.status(404).json({
         message: "Category not found",
-      })
+      });
     }
 
-    return res.status(200).json(rows[0]);
-
+    return res.status(200).json(category);
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to fetch category"
-    })
+    });
   }
-}
+};
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
+    const { name } = req.body ?? {};
 
-    const { name } = req.body;
-
-    if (!name) {
-      return res.status(400).json({
-        message: "Name category not found",
-      })
-    }
-
-    if (typeof name !== "string" || name.trim().length === 0) {
-      return res.status(400).json({
-        message: "Enter valid name",
-      })
-    }
-
-    const [result] = await pool.query<ResultSetHeader>
-    ("INSERT INTO categories (name) VALUES (?)",
-      [name.trim()]
-    )
+    const category = await categoryService.createCategory(name);
 
     return res.status(201).json({
       message: "Category created successfully",
-      id: result.insertId,
-      name: name.trim(),
+      ...category,
     });
-
   } catch (error) {
-    console.log("Error creating category",error);
+    console.error("Error creating category", error);
 
     return res.status(500).json({
       message: "Failed to create category",

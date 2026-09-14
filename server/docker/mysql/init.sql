@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS categories (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS products (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(12, 2) NOT NULL,
+  category_id INT UNSIGNED NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories (id),
+  CONSTRAINT chk_products_price CHECK (price > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

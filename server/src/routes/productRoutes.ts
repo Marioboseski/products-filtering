@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { validateProduct } from "../middleware/validateProduct.js";
 import {
   getProducts,
   getProductById,
@@ -11,8 +12,8 @@ const router = Router();
 
 router.get("/", getProducts);
 router.get("/:id", getProductById);
-router.post("/", createProduct);
+router.post("/", validateProduct, createProduct);
 router.delete("/:id", deleteProduct);
-router.put("/:id", updateProduct);
+router.put("/:id", validateProduct, updateProduct);
 
 export default router;
