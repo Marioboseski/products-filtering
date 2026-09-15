@@ -12,9 +12,12 @@ const ProductCard = ({product}: ProductProps) => {
 
 const styles = StyleSheet.create({
   productCard: {
+    padding: 10,
+    width: "100%",
+    maxWidth: 150,
     backgroundColor: "red",
     borderRadius: 10,
-    gap: 5
+    gap: 5,
   },
 
 })
