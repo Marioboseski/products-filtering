@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet, Pressable } from "react-native"
+import { View, Text, FlatList, StyleSheet, Pressable, TextInput } from "react-native"
 import { useState, useCallback } from "react";
 import type { Product } from "@/types/product";
 import { getProducts, deleteProduct } from "@/services/productsApi";
@@ -8,6 +8,7 @@ import { router, useFocusEffect } from "expo-router";
 const HomeScreen = () => {
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState("");
 
   useFocusEffect(useCallback(() => {
     const fetchProducts = async () => {
@@ -24,10 +25,25 @@ const HomeScreen = () => {
       prevProducts.filter((product) => product.id !== id));
   }
 
+  const searchFilteredProducts = products.filter((filteredProduct) =>
+    filteredProduct.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <View style={styles.container}>
+      <TextInput
+        value={search}
+        onChangeText={setSearch}
+        placeholder="Search products..."
+        style={styles.searchInput}
+      />
+
+      {search.trim().length > 0 && searchFilteredProducts.length === 0 && (
+        <Text style={styles.noProductText}>No product found</Text>
+      )}
+
       <FlatList
-        data={products}
+        data={searchFilteredProducts}
         numColumns={2}
         renderItem={({ item }) => <ProductCard product={item} onDelete={handleDeleteProduct} />}
         keyExtractor={(item) => item.id.toString()}
@@ -53,11 +69,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#22db44",
     padding: 5,
     borderRadius: 10,
+    marginTop: 15
   },
 
   addButtonText: {
     textAlign: "center",
     fontSize: 20,
+  },
+
+  searchInput: {
+    borderWidth: 1,
+    borderColor: "black",
+    borderRadius: 10,
+    fontSize: 18,
+    marginBottom: 15
+  },
+
+  noProductText: {
+    textAlign: "center",
+    fontWeight: "bold",
   }
 
 })
