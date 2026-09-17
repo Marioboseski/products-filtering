@@ -1,21 +1,21 @@
 import { View, Text, FlatList, StyleSheet, Pressable } from "react-native"
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { Product } from "@/types/product";
 import { getProducts } from "@/services/productsApi";
 import ProductCard from "@/components/products/ProductCard";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 const HomeScreen = () => {
 
   const [products, setProducts] = useState<Product[]>([]);
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     const fetchProducts = async () => {
       const data = await getProducts();
       setProducts(data);
     }
     fetchProducts();
-  }, [])
+  }, []));
 
   return (
     <View style={styles.container}>
