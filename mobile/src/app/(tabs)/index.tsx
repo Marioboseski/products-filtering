@@ -1,7 +1,7 @@
 import { View, Text, FlatList, StyleSheet, Pressable } from "react-native"
 import { useState, useCallback } from "react";
 import type { Product } from "@/types/product";
-import { getProducts } from "@/services/productsApi";
+import { getProducts, deleteProduct } from "@/services/productsApi";
 import ProductCard from "@/components/products/ProductCard";
 import { router, useFocusEffect } from "expo-router";
 
@@ -17,12 +17,19 @@ const HomeScreen = () => {
     fetchProducts();
   }, []));
 
+  const handleDeleteProduct = async (id: number) => {
+    await deleteProduct(id);
+
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== id));
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
         data={products}
         numColumns={2}
-        renderItem={({ item }) => <ProductCard product={item} />}
+        renderItem={({ item }) => <ProductCard product={item} onDelete={handleDeleteProduct} />}
         keyExtractor={(item) => item.id.toString()}
         ListFooterComponent={
           <Pressable
@@ -39,6 +46,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     gap: 4,
+    padding: 56,
   },
 
   addButton: {

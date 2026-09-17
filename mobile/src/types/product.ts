@@ -6,7 +6,8 @@ export type Product = {
 }
 
 export type ProductProps = {
-  product: Product
+  product: Product,
+  onDelete: (id: number) => void,
 }
 
 export type NewProduct = {

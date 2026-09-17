@@ -22,3 +22,11 @@ export const createProduct = async (product: NewProduct): Promise<Product> => {
 
   return res.json();
 }
+
+export const deleteProduct = async (id: number) => {
+  const res = await fetch(`${API_URL}/api/products/${id}`,{
+    method: "DELETE",
+  });
+
+  return res.json();
+}
