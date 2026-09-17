@@ -35,7 +35,7 @@ const HomeScreen = () => {
           <Pressable
             style={styles.addButton}
             onPress={() => router.push("/add-product")}>
-            <Text>Add product</Text>
+            <Text style={styles.addButtonText}>Add product</Text>
           </Pressable>
         } />
     </View>
@@ -50,10 +50,15 @@ const styles = StyleSheet.create({
   },
 
   addButton: {
-    backgroundColor: "green",
+    backgroundColor: "#22db44",
     padding: 5,
     borderRadius: 10,
   },
+
+  addButtonText: {
+    textAlign: "center",
+    fontSize: 20,
+  }
 
 })
 
