@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Button, } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { createProduct } from "@/services/productsApi";
 import { getCategories } from "@/services/categoriesApi";
 import { useState, useEffect } from "react";
@@ -19,7 +19,7 @@ const AddProduct = () => {
   const [fetchError, setFetchError] = useState("");
   const [createError, setCreateError] = useState("");
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
-  const [ isCreating, setIsCreating ] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -64,64 +64,101 @@ const AddProduct = () => {
   }
 
   return (
-    <View>
-      <TextInput
-        value={newProduct.name}
-        onChangeText={(value) => setNewProduct((prev) => ({
-          ...prev, name: value,
-        }))}
-        placeholder="product name"
-      />
+    <View style={styles.container}>
+      <View style={styles.formLayout}>
+        <TextInput
+          value={newProduct.name}
+          onChangeText={(value) => setNewProduct((prev) => ({
+            ...prev, name: value,
+          }))}
+          placeholder="product name"
+          style={styles.formInputs}
+        />
 
-      <TextInput
-        value={newProduct.price}
-        onChangeText={(value) => setNewProduct((prev) => ({
-          ...prev, price: value,
-        }))}
-        placeholder="product price"
-        keyboardType="decimal-pad"
-      />
+        <TextInput
+          value={newProduct.price}
+          onChangeText={(value) => setNewProduct((prev) => ({
+            ...prev, price: value,
+          }))}
+          placeholder="product price"
+          keyboardType="decimal-pad"
+          style={styles.formInputs}
+        />
 
-      <Picker
-        enabled={!isCategoriesLoading}
-        selectedValue={newProduct.category_id}
-        onValueChange={(value) =>
-          setNewProduct((prev) => ({
-            ...prev,
-            category_id: value,
-          }))
-        }
-      >
-        <Picker.Item label="Select category" value={0} />
+        <View style={styles.pickerContainer}>
+          <Picker
+            enabled={!isCategoriesLoading}
+            selectedValue={newProduct.category_id}
+            onValueChange={(value) =>
+              setNewProduct((prev) => ({
+                ...prev,
+                category_id: value,
+              }))
+            }
+          >
+            <Picker.Item label="Select category" value={0} />
 
-        {categories.map((category) => (
-          <Picker.Item
-            key={category.id}
-            label={category.name}
-            value={category.id}
-          />
-        ))}
-      </Picker>
+            {categories.map((category) => (
+              <Picker.Item
+                key={category.id}
+                label={category.name}
+                value={category.id}
+              />
+            ))}
+          </Picker>
+        </View>
 
-      <Button
-        title={isCreating ? "Adding..." : "Add product"}
-        onPress={handleSubmit}
-        disabled={isCreating}
-      />
+        <Button
+          title={isCreating ? "Adding..." : "Add product"}
+          onPress={handleSubmit}
+          disabled={isCreating}
+        />
 
-       {isCategoriesLoading && (
-        <ActivityIndicator size={"small"} />
-      )}
+        {isCategoriesLoading && (
+          <ActivityIndicator size={"small"} />
+        )}
 
-      {fetchError && (
-        <Text>{fetchError}</Text>
-      )}
+        {fetchError && (
+          <Text>{fetchError}</Text>
+        )}
 
-      {createError && (
-        <Text>{createError}</Text>
-      )}
+        {createError && (
+          <Text>{createError}</Text>
+        )}
+      </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
+
+  formInputs: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    width: "100%",
+    fontSize: 16,
+  },
+
+  formLayout: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    maxWidth: 300,
+    gap: 10,
+  },
+
+  pickerContainer: {
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 10,
+  }
+})
 
 export default AddProduct;
