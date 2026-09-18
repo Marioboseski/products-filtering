@@ -9,20 +9,47 @@ const HomeScreen = () => {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
+  const [fetchError, setFetchError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isProductsLoading, setIsProductsLoading] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
 
   useFocusEffect(useCallback(() => {
     const fetchProducts = async () => {
-      const data = await getProducts();
-      setProducts(data);
+      try {
+        setIsProductsLoading(true);
+        setFetchError("");
+
+        const data = await getProducts();
+        setProducts(data);
+
+      } catch (error) {
+        setFetchError("Unable to load products. Try again.")
+        console.log(error);
+      } finally {
+        setIsProductsLoading(false);
+      }
     }
     fetchProducts();
   }, []));
 
   const handleDeleteProduct = async (id: number) => {
-    await deleteProduct(id);
+    try {
 
-    setProducts((prevProducts) =>
-      prevProducts.filter((product) => product.id !== id));
+      setDeleteError("");
+      setDeletingProductId(id);
+
+      await deleteProduct(id);
+
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== id));
+
+    } catch (error) {
+      setDeleteError("Unable to delete the product. Try again.")
+      console.log(error);
+    } finally {
+      setDeletingProductId(null);
+    }
   }
 
   const searchFilteredProducts = products.filter((filteredProduct) =>
@@ -38,6 +65,18 @@ const HomeScreen = () => {
         style={styles.searchInput}
       />
 
+      {isProductsLoading && (
+        <Text>Loading...</Text>
+      )}
+
+      {fetchError && (
+        <Text style={styles.errorText}>{fetchError}</Text>
+      )}
+
+      {deleteError && (
+        <Text style={styles.errorText}>{deleteError}</Text>
+      )}
+
       {search.trim().length > 0 && searchFilteredProducts.length === 0 && (
         <Text style={styles.noProductText}>No product found</Text>
       )}
@@ -45,7 +84,7 @@ const HomeScreen = () => {
       <FlatList
         data={searchFilteredProducts}
         numColumns={2}
-        renderItem={({ item }) => <ProductCard product={item} onDelete={handleDeleteProduct} />}
+        renderItem={({ item }) => <ProductCard product={item} onDelete={handleDeleteProduct} isDeleting={deletingProductId === item.id} />}
         keyExtractor={(item) => item.id.toString()}
         ListFooterComponent={
           <Pressable
@@ -88,6 +127,12 @@ const styles = StyleSheet.create({
   noProductText: {
     textAlign: "center",
     fontWeight: "bold",
+  },
+
+  errorText: {
+    textAlign: "center",
+    fontSize: 25,
+    color: "red",
   }
 
 })

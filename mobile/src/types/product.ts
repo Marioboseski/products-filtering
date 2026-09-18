@@ -8,6 +8,7 @@ export type Product = {
 export type ProductProps = {
   product: Product,
   onDelete: (id: number) => void,
+  isDeleting: boolean,
 }
 
 export type NewProduct = {

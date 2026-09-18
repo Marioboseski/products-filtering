@@ -20,6 +20,10 @@ export const createProduct = async (product: NewProduct): Promise<Product> => {
     body: JSON.stringify(product)
   });
 
+  if (!res.ok) {
+    throw new Error("Failed to create product");
+  }
+
   return res.json();
 }
 
@@ -27,6 +31,10 @@ export const deleteProduct = async (id: number) => {
   const res = await fetch(`${API_URL}/api/products/${id}`,{
     method: "DELETE",
   });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete product");
+  }
 
   return res.json();
 }

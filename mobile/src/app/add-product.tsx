@@ -1,4 +1,4 @@
-import { View, TextInput, Button, } from "react-native";
+import { View, Text, TextInput, Button, } from "react-native";
 import { createProduct } from "@/services/productsApi";
 import { getCategories } from "@/services/categoriesApi";
 import { useState, useEffect } from "react";
@@ -15,25 +15,51 @@ const AddProduct = () => {
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [fetchError, setFetchError] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
+  const [ isCreating, setIsCreating ] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
-      const data = await getCategories();
-      setCategories(data);
+      try {
+        setIsCategoriesLoading(true);
+        setFetchError("");
+
+        const data = await getCategories();
+        setCategories(data);
+
+      } catch (error) {
+        setFetchError("Unable to load categories. Try again.")
+        console.log(error);
+      } finally {
+        setIsCategoriesLoading(false);
+      }
     }
     fetchCategories();
   }, []);
 
   const handleSubmit = async () => {
-    const product: NewProduct = {
-      name: newProduct.name,
-      price: Number(newProduct.price),
-      category_id: newProduct.category_id,
+    try {
+      setIsCreating(true);
+      setCreateError("");
+
+      const product: NewProduct = {
+        name: newProduct.name,
+        price: Number(newProduct.price),
+        category_id: newProduct.category_id,
+      }
+
+      await createProduct(product);
+
+      router.back();
+
+    } catch (error) {
+      setCreateError("Unable to add product. Try again")
+      console.log(error);
+    } finally {
+      setIsCreating(false);
     }
-
-    await createProduct(product);
-
-    router.back();
   }
 
   return (
@@ -56,6 +82,7 @@ const AddProduct = () => {
       />
 
       <Picker
+        enabled={!isCategoriesLoading}
         selectedValue={newProduct.category_id}
         onValueChange={(value) =>
           setNewProduct((prev) => ({
@@ -76,9 +103,22 @@ const AddProduct = () => {
       </Picker>
 
       <Button
-        title="Add product"
+        title={isCreating ? "Adding..." : "Add product"}
         onPress={handleSubmit}
+        disabled={isCreating}
       />
+
+       {isCategoriesLoading && (
+        <Text>Loading categories</Text>
+      )}
+
+      {fetchError && (
+        <Text>{fetchError}</Text>
+      )}
+
+      {createError && (
+        <Text>{createError}</Text>
+      )}
     </View>
   );
 }
