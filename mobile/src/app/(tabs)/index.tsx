@@ -4,6 +4,7 @@ import type { Product } from "@/types/product";
 import { getProducts, deleteProduct } from "@/services/productsApi";
 import ProductCard from "@/components/products/ProductCard";
 import { router, useFocusEffect } from "expo-router";
+import { ActivityIndicator } from "react-native";
 
 const HomeScreen = () => {
 
@@ -66,7 +67,7 @@ const HomeScreen = () => {
       />
 
       {isProductsLoading && (
-        <Text>Loading...</Text>
+        <ActivityIndicator size={"large"} />
       )}
 
       {fetchError && (

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import type { NewProduct, Category, NewProductFormData } from "@/types/product";
 import { Picker } from "@react-native-picker/picker";
 import { router } from "expo-router";
+import { ActivityIndicator } from "react-native";
 
 const AddProduct = () => {
 
@@ -109,7 +110,7 @@ const AddProduct = () => {
       />
 
        {isCategoriesLoading && (
-        <Text>Loading categories</Text>
+        <ActivityIndicator size={"small"} />
       )}
 
       {fetchError && (
