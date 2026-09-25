@@ -1,56 +1,47 @@
 import { View, Text, FlatList, StyleSheet, Pressable, TextInput } from "react-native"
-import { useState, useCallback } from "react";
-import type { Product } from "@/types/product";
+import { useState } from "react";
 import { getProducts, deleteProduct } from "@/services/productsApi";
 import ProductCard from "@/components/products/ProductCard";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { ActivityIndicator } from "react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const HomeScreen = () => {
 
-  const [products, setProducts] = useState<Product[]>([]);
+  const queryClient = useQueryClient();
+
   const [search, setSearch] = useState("");
-  const [fetchError, setFetchError] = useState("");
   const [deleteError, setDeleteError] = useState("");
-  const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
 
-  useFocusEffect(useCallback(() => {
-    const fetchProducts = async () => {
-      try {
-        setIsProductsLoading(true);
-        setFetchError("");
+  const { data: products = [], isLoading: isProductsLoading, isError } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+  });
 
-        const data = await getProducts();
-        setProducts(data);
-
-      } catch (error) {
-        setFetchError("Unable to load products. Try again.")
-        console.log(error);
-      } finally {
-        setIsProductsLoading(false);
-      }
-    }
-    fetchProducts();
-  }, []));
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+    },
+  })
 
   const handleDeleteProduct = async (id: number) => {
-    try {
 
-      setDeleteError("");
-      setDeletingProductId(id);
+    setDeleteError("");
+    setDeletingProductId(id);
 
-      await deleteProduct(id);
-
-      setProducts((prevProducts) =>
-        prevProducts.filter((product) => product.id !== id));
-
-    } catch (error) {
-      setDeleteError("Unable to delete the product. Try again.")
-      console.log(error);
-    } finally {
-      setDeletingProductId(null);
-    }
+    deleteMutation.mutate(id, {
+      onError: (error) => {
+        setDeleteError("Unable to delete product. Try again");
+        console.log(error);
+      },
+      onSettled: () => {
+        setDeletingProductId(null);
+      }
+    });
   }
 
   const searchFilteredProducts = products.filter((filteredProduct) =>
@@ -70,8 +61,8 @@ const HomeScreen = () => {
         <ActivityIndicator size={"large"} />
       )}
 
-      {fetchError && (
-        <Text style={styles.errorText}>{fetchError}</Text>
+      {isError && (
+        <Text style={styles.errorText}>Unable to load products. Try again.</Text>
       )}
 
       {deleteError && (
