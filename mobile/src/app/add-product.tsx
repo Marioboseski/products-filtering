@@ -1,13 +1,16 @@
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
 import { createProduct } from "@/services/productsApi";
 import { getCategories } from "@/services/categoriesApi";
-import { useState, useEffect } from "react";
-import type { NewProduct, Category, NewProductFormData } from "@/types/product";
+import { useState } from "react";
+import type { NewProduct, NewProductFormData } from "@/types/product";
 import { Picker } from "@react-native-picker/picker";
 import { router } from "expo-router";
 import { ActivityIndicator } from "react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const AddProduct = () => {
+
+  const queryClient = useQueryClient();
 
   const [newProduct, setNewProduct] = useState<NewProductFormData>({
     name: "",
@@ -15,52 +18,32 @@ const AddProduct = () => {
     category_id: 0
   });
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [fetchError, setFetchError] = useState("");
-  const [createError, setCreateError] = useState("");
-  const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  const { data: categories = [], isLoading: isCategoriesLoading, isError } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories
+  });
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setIsCategoriesLoading(true);
-        setFetchError("");
+  const createMutation = useMutation({
+    mutationFn: createProduct,
 
-        const data = await getCategories();
-        setCategories(data);
-
-      } catch (error) {
-        setFetchError("Unable to load categories. Try again.")
-        console.log(error);
-      } finally {
-        setIsCategoriesLoading(false);
-      }
-    }
-    fetchCategories();
-  }, []);
-
-  const handleSubmit = async () => {
-    try {
-      setIsCreating(true);
-      setCreateError("");
-
-      const product: NewProduct = {
-        name: newProduct.name,
-        price: Number(newProduct.price),
-        category_id: newProduct.category_id,
-      }
-
-      await createProduct(product);
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
 
       router.back();
+    },
+  });
 
-    } catch (error) {
-      setCreateError("Unable to add product. Try again")
-      console.log(error);
-    } finally {
-      setIsCreating(false);
+  const handleSubmit = () => {
+
+    const product: NewProduct = {
+      name: newProduct.name,
+      price: Number(newProduct.price),
+      category_id: newProduct.category_id,
     }
+
+    createMutation.mutate(product);
   }
 
   return (
@@ -109,21 +92,21 @@ const AddProduct = () => {
         </View>
 
         <Button
-          title={isCreating ? "Adding..." : "Add product"}
+          title={createMutation.isPending ? "Adding..." : "Add product"}
           onPress={handleSubmit}
-          disabled={isCreating}
+          disabled={createMutation.isPending}
         />
 
         {isCategoriesLoading && (
           <ActivityIndicator size={"small"} />
         )}
 
-        {fetchError && (
-          <Text>{fetchError}</Text>
+        {isError && (
+          <Text>Failed to load categories</Text>
         )}
 
-        {createError && (
-          <Text>{createError}</Text>
+        {createMutation.isError && (
+          <Text>Unable to add product. Try again</Text>
         )}
       </View>
     </View>
